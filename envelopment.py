@@ -111,11 +111,13 @@ class DEA(object):
         :return:
         """
         d0 = self.m + self.r + self.n
+        x0 = np.random.rand(d0) - 0.5
         # iterate over units
         for unit in self.unit_:
             # weights
-            x0 = np.random.rand(d0) - 0.5
-            fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit))
+            x0 = fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit))
+        # unroll weights
+        self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
 
 
 
