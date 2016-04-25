@@ -7,7 +7,8 @@ http://deazone.com/en/resources/tutorial
 """
 
 import numpy as np
-from scipy.optimize import linprog, fmin_slsqp
+from scipy.optimize import fmin_slsqp
+
 
 class DEA(object):
 
@@ -40,22 +41,19 @@ class DEA(object):
         self.output_w = np.zeros((self.r, 1), dtype=np.float)  # output weights
         self.input_w = np.zeros((self.m, 1), dtype=np.float)  # input weights
         self.lambdas = np.zeros((self.n, 1), dtype=np.float)  # unit efficiencies
-        self.theta = 0.  # total efficiency
+        self.efficiency = np.zeros_like(self.lambdas)  # thetas
 
-    def __efficiency(self, weights):
+    def __efficiency(self):
         """
         Efficiency function to optimize
-        :param weights: "unrolled" weights, first input then output
         :return: efficiency
         """
-        # split weights
-        in_w = weights[:self.m]
-        out_w = weights[self.m:]
-        # compute efficiency
-        denominator = np.dot(self.inputs, in_w)
-        numerator = np.dot(self.outputs, out_w)
 
-        return numerator/denominator
+        # compute efficiency
+        denominator = np.dot(self.inputs, self.input_w)
+        numerator = np.dot(self.outputs, self.output_w)
+
+        self.efficiency = numerator/denominator
 
     def __target(self, x, unit):
         """
@@ -118,6 +116,22 @@ class DEA(object):
             x0 = fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit))
         # unroll weights
         self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
+
+    def fit(self):
+        """
+        Optimize the dataset, generate basic table
+        :return: table
+        """
+
+        self.__optimize()  # optimize
+        self.__efficiency()  # compute efficiency
+
+        print("Final thetas for each unit:\n")
+        print("---------------------------\n")
+        for n, eff in enumerate(self.efficiency):
+            print("Unit %d theta: %.3f" % (n, eff))
+            print("\n")
+        print("---------------------------\n")
 
 
 
