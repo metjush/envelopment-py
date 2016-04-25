@@ -82,7 +82,7 @@ class DEA(object):
 
         # for each input, lambdas with inputs
         for input in self.input_:
-            t = self.__target(in_w, out_w, lambdas, unit)
+            t = self.__target(x, unit)
             lhs = np.dot(self.inputs[:, input], lambdas)
             cons = t*self.inputs[unit, input] - lhs
             constr.append(cons)
@@ -113,7 +113,9 @@ class DEA(object):
         # iterate over units
         for unit in self.unit_:
             # weights
-            x0 = fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit))
+            if unit != 4:
+                continue
+            x0 = fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit,))
         # unroll weights
         self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
 
@@ -128,10 +130,26 @@ class DEA(object):
 
         print("Final thetas for each unit:\n")
         print("---------------------------\n")
-        for n, eff in enumerate(self.efficiency):
-            print("Unit %d theta: %.3f" % (n, eff))
+        for n, eff in enumerate(self.lambdas):
+            print("Unit %d theta: %.3f" % (n+1, eff))
             print("\n")
         print("---------------------------\n")
 
 
-
+if __name__ == "__main__":
+    X = np.array([
+        [20., 300.],
+        [30., 200.],
+        [40., 100.],
+        [20., 200.],
+        [10., 400.]
+    ])
+    y = np.array([
+        [1000.],
+        [1000.],
+        [1000.],
+        [1000.],
+        [1000.]
+    ])
+    dea = DEA(X,y)
+    dea.fit()
