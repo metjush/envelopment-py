@@ -1,4 +1,6 @@
 """
+Data Envelopment Analysis implementation
+
 Sources:
 Sherman & Zhu (2006) Sercice Productivity Management, Improving Service Performance using Data Envelopment Analysis (DEA) [Chapter 2]
 ISBN: 978-0-387-33211-6
@@ -43,9 +45,10 @@ class DEA(object):
         self.lambdas = np.zeros((self.n, 1), dtype=np.float)  # unit efficiencies
         self.efficiency = np.zeros_like(self.lambdas)  # thetas
 
-    def __efficiency(self):
+    def __efficiency(self, unit):
         """
-        Efficiency function to optimize
+        Efficiency function with already computed weights
+        :param unit: which unit to compute for
         :return: efficiency
         """
 
@@ -53,14 +56,13 @@ class DEA(object):
         denominator = np.dot(self.inputs, self.input_w)
         numerator = np.dot(self.outputs, self.output_w)
 
-        self.efficiency = numerator/denominator
+        return (numerator/denominator)[unit]
 
     def __target(self, x, unit):
         """
         Theta target function for one unit
         :param x: combined weights
-        :param unit:
-
+        :param unit: which production unit to compute
         :return: theta
         """
         in_w, out_w, lambdas = x[:self.m], x[self.m:(self.m+self.r)], x[(self.m+self.r):]  # unroll the weights
@@ -73,7 +75,7 @@ class DEA(object):
         """
         Constraints for optimization for one unit
         :param x: combined weights
-        :param unit:
+        :param unit: which production unit to compute
         :return: array of constraints
         """
 
@@ -109,15 +111,14 @@ class DEA(object):
         :return:
         """
         d0 = self.m + self.r + self.n
-        x0 = np.random.rand(d0) - 0.5
         # iterate over units
         for unit in self.unit_:
             # weights
-            if unit != 4:
-                continue
+            x0 = np.random.rand(d0) - 0.5
             x0 = fmin_slsqp(self.__target, x0, f_ieqcons=self.__constraints, args=(unit,))
-        # unroll weights
-        self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
+            # unroll weights
+            self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
+            self.efficiency[unit] = self.__efficiency(unit)
 
     def fit(self):
         """
@@ -126,11 +127,10 @@ class DEA(object):
         """
 
         self.__optimize()  # optimize
-        self.__efficiency()  # compute efficiency
 
         print("Final thetas for each unit:\n")
         print("---------------------------\n")
-        for n, eff in enumerate(self.lambdas):
+        for n, eff in enumerate(self.efficiency):
             print("Unit %d theta: %.3f" % (n+1, eff))
             print("\n")
         print("---------------------------\n")
