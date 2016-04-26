@@ -45,6 +45,9 @@ class DEA(object):
         self.lambdas = np.zeros((self.n, 1), dtype=np.float)  # unit efficiencies
         self.efficiency = np.zeros_like(self.lambdas)  # thetas
 
+        # names
+        self.names = []
+
     def __efficiency(self, unit):
         """
         Efficiency function with already computed weights
@@ -120,6 +123,17 @@ class DEA(object):
             self.input_w, self.output_w, self.lambdas = x0[:self.m], x0[self.m:(self.m+self.r)], x0[(self.m+self.r):]
             self.efficiency[unit] = self.__efficiency(unit)
 
+    def name_units(self, names):
+        """
+        Provide names for units for presentation purposes
+        :param names: a list of names, equal in length to the number of units
+        :return: nothing
+        """
+
+        assert(self.n == len(names))
+
+        self.names = names
+
     def fit(self):
         """
         Optimize the dataset, generate basic table
@@ -131,7 +145,11 @@ class DEA(object):
         print("Final thetas for each unit:\n")
         print("---------------------------\n")
         for n, eff in enumerate(self.efficiency):
-            print("Unit %d theta: %.3f" % (n+1, eff))
+            if len(self.names) > 0:
+                name = "Unit %s" % self.names[n]
+            else:
+                name = "Unit %d" % (n+1)
+            print("%s theta: %.4f" % (name, eff))
             print("\n")
         print("---------------------------\n")
 
@@ -151,5 +169,13 @@ if __name__ == "__main__":
         [1000.],
         [1000.]
     ])
+    names = [
+        'Bratislava',
+        'Zilina',
+        'Kosice',
+        'Presov',
+        'Poprad'
+    ]
     dea = DEA(X,y)
+    dea.name_units(names)
     dea.fit()
