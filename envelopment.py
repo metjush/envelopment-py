@@ -2,7 +2,7 @@
 Data Envelopment Analysis implementation
 
 Sources:
-Sherman & Zhu (2006) Sercice Productivity Management, Improving Service Performance using Data Envelopment Analysis (DEA) [Chapter 2]
+Sherman & Zhu (2006) Service Productivity Management, Improving Service Performance using Data Envelopment Analysis (DEA) [Chapter 2]
 ISBN: 978-0-387-33211-6
 http://deazone.com/en/resources/tutorial
 
