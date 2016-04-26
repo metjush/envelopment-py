@@ -13,6 +13,6 @@ After each unit's weights are optimized and the algorithm converges, `theta` (ef
 
 After all units are fit, the `fit()` function prints `thetas` for each unit.
 
-## Sourcr
+## Sources
 Sherman and Zhu (2006) *Service Productivity Management*, Improving Service Performance using Data Envelopment Analysis (DEA) [Chapter 2]
 ISBN: 978-0-387-33211-6
